@@ -67,7 +67,7 @@ jobs:
           tags: ${{ github.run_number}}
           daemon_off: false
           dockerfile: ./Dockerfile
-          context: vpro
+          context: ./
             
         
 
