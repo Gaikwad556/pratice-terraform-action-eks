@@ -64,7 +64,7 @@ jobs:
           # cache_from: ${{ secrets.cache }}
           repo: ${{env.ECR_REPO}}
           region: ${{env.AWS_REGION}}
-          auto_tag: true
+          tags: ${{ github.run_number}}
           daemon_off: false
           dockerfile: ./Dockerfile
           context: vpro
