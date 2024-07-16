@@ -1,0 +1,52 @@
+name: artfacts
+on:
+  workflow_dispatch:
+    
+env:
+  AWS_REGION: us-east-1
+  AWS_CLUSTER: cluster_eks
+  ECR_REPO: vproapp
+
+jobs:
+  artifactsbuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: install maven
+        id: mvn_install
+        run: mvn install
+
+      - name: mvn checkstyle
+        id: checkstyle
+        run: mvn checkstyle:checkstyle
+
+      - name: code analysis
+        id: analysis
+        run: sonar-scanner
+           -Dsonar.host.url=${{ secrets.SONAR_URL }}
+           -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+           -Dsonar.organization=${{ secrets.SONAR_ORG }}
+           -Dsonar.projectKey=${{ secrets.SONAR_PROJECT}}
+           -Dsonar.sources=src/ 
+           -Dsonar.junit.reportsPath=target/surefire-reports/
+           -Dsonar.jacoco.reportsPath=target/jacoco.exec
+           -Dsonar.java.checkstyle.reportsPath=target/checkstyle-result.xml
+           -Dsonar.java.reportsPath=target/test-classes/com/visualpathit/account
+
+      - name: quality gate
+        id: gate
+        if: steps.analysis.outcome == 'success'
+        uses: sonarsource/sonarqube-quality-gate-action@master
+      # Force to fail step after specific time.
+        timeout-minutes: 5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: ${{ secrets.SONAR_URL }}
+
+      
+            
+        
+
+    
